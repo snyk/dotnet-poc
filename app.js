@@ -2,66 +2,59 @@
 
 /*
 ## todo:
-
-* allow the user to customise the starting directory
-* add a switch for a package id filter
 * include PackageReference format:
     https://github.com/NuGet/Home/wiki/PackageReference-Specification
     https://docs.microsoft.com/en-us/nuget/consume-packages/package-references-in-project-files
 
 */
 
-var packagesConfig = require('./packages.config.js');
-var projectLockJson = require('./project.lock.json.js');
-var nuspec = require('./package.nupkg.js');
-var packages = require('./packages.js');
-var archy = require('archy');
-var colours = require('colors');
-
-var dir = process.cwd();
+const packagesConfig = require('./packages.config.js'),
+    projectLockJson = require('./project.lock.json.js'),
+    nuspec = require('./package.nupkg.js'),
+    packages = require('./packages.js'),    
+    dir = process.argv.slice(2)[0];
 
 function hasFlag(name) {
     return !!process.argv.filter(x => x === '--' + name).length;
 }
 
-var settings = {
+const settings = {
     hideVersion: hasFlag('hideVersion'),
     showSystem: hasFlag('showSystem'),
     onlyTopLevel: hasFlag('onlyTopLevel'),
     flat: hasFlag('flat')
 }
 
-var packagesFromProjectLockJson = projectLockJson.list(dir, settings);
+const packagesFromProjectLockJson = projectLockJson.list(dir, settings);
 if (packagesFromProjectLockJson && packagesFromProjectLockJson.length) {
     displayPackages(packagesFromProjectLockJson, 'project.lock.json');
 }
 else {
 
-    var packagesFromPackageConfig = packagesConfig.list(dir);
+    const packagesFromPackageConfig = packagesConfig.list(dir);
     if (packagesFromPackageConfig && packagesFromPackageConfig.length) {
 
-        var packageFolder = packages.findPackageFolder(dir);
+        const packageFolder = packages.findPackageFolder(dir);
         if (!packageFolder) {
             console.log("Cannot find 'packages' directory. Have you run 'nuget restore'?");
             return;
         }
 
-        var packages = packagesFromPackageConfig;
         if (!settings.showSystem) {
-            packages = packages.filter(x => x.id.indexOf('System.') !== 0)
+            filterPackages = packagesFromPackageConfig.filter(x => x.id.indexOf('System.') !== 0)
         }
 
-        var packageDictionary = {};
-        packages.forEach(x => {
+        const packageDictionary = {};
+        filterPackages.forEach(x => {
             packageDictionary[x.id] = x;
             x.label = x.id + " " + (settings.hideVersion ? "" : x.version.green);
         });
 
-        packages.forEach(x => {
+        filterPackages.forEach(x => {
             x.nodes = x.nodes || [];
             (nuspec.readNuspec(packageFolder, x) || []).forEach(dep => {
 
-                var resolvedDep = packageDictionary[dep.id];
+                const resolvedDep = packageDictionary[dep.id];
                 if (resolvedDep) {
                     if (x.nodes.filter(x => x.id === dep.id).length) return; // already added
 
@@ -72,28 +65,34 @@ else {
                 }
             });
         });
-        displayPackages(packages, 'packages.config');
+        displayPackages(filterPackages, 'packages.config');
     }
 }
 
 function displayPackages(packages, source) {
 
-    if (settings.onlyTopLevel) {
-        packages.filter(x => !x.used).forEach(x => {
-            console.log(x.label);
-        });
-    } else if (settings.flat) {
-        packages.forEach(x => {
-            console.log(x.label);
-        });
-    } else {
-        var head = {
-            label: source,
-            nodes: packages.filter(x => !x.used)
-        };
-        
-        
-        console.log(JSON.stringify(head));
+    var head = {
+        label: source,
+        id: 'app',
+        version: '0.0.0',
+        nodes: packages.filter(x => !x.used)
+    };
+
+    function transofrmRecursive(node, fatherNode) {
+        const cloned = { name: node.id, version: node.version, dependencies: [], from: [] };
+        if (fatherNode && fatherNode.from) {
+            fatherNode.from.forEach(x => {
+                cloned.from.push(x);
+            });
+        }
+        cloned.from.push(cloned.name + '@' + cloned.version);
+        if (node.nodes && node.nodes.length > 0) {
+            node.nodes.forEach(subNode => {
+                cloned.dependencies.push(transofrmRecursive(subNode, cloned));
+            });
+        }
+        return cloned
     }
+    console.log(JSON.stringify(transofrmRecursive(head, [])));
 }
 

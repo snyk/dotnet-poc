@@ -1,7 +1,7 @@
-var fs = require('fs');
-var path = require('path');
-var parseXml = require('xml2js').parseString;
-var safeBufferRead = require('./safeBufferRead');
+const fs = require('fs'),
+    path = require('path'),
+    parseXml = require('xml2js').parseString,
+    safeBufferRead = require('./safeBufferRead');
 
 module.exports.list = function (dir) {
 
@@ -9,9 +9,9 @@ module.exports.list = function (dir) {
         return null;
     }
 
-    var xml = safeBufferRead(fs.readFileSync(path.join(dir, 'packages.config')));
+    const xml = safeBufferRead(fs.readFileSync(path.join(dir, 'packages.config')));
 
-    var parsedOutput;
+    let parsedOutput;
     parseXml(xml, function (err, result) {
         parsedOutput = result;
     });
@@ -25,7 +25,7 @@ module.exports.list = function (dir) {
             }
         });
     }
-    catch(err){
+    catch (err) {
         console.log("Cannot parse 'packages.config'. Is it in a valid format?");
         return false;
     }

@@ -1,18 +1,18 @@
 
-var fs = require('fs');
-var safeBufferRead = require('./safeBufferRead');
-var path = require('path');
+const fs = require('fs'),
+    safeBufferRead = require('./safeBufferRead'),
+    path = require('path');
 
-module.exports.list = function(dir, settings){
+module.exports.list = function (dir, settings) {
 
-    if (!fs.existsSync(path.join(dir,'project.lock.json'))){
+    if (!fs.existsSync(path.join(dir, 'project.lock.json'))) {
         return null;
     }
 
-    var jsonString = safeBufferRead(fs.readFileSync(path.join(dir,'project.lock.json')));
-    var json = JSON.parse(jsonString);
+    const jsonString = safeBufferRead(fs.readFileSync(path.join(dir, 'project.lock.json'))),
+        json = JSON.parse(jsonString);
 
-    var packageDictionary = {};
+    const packageDictionary = {};
 
     // put all packages in the dictionary
     Object.keys(json.targets).forEach(target => {
@@ -20,18 +20,18 @@ module.exports.list = function(dir, settings){
 
             if (!settings.showSystem && dep.indexOf('System.') === 0) return;
 
-            var depParts = dep.split('/');
-            var id = depParts[0];
-            var version = depParts[1];
-            var dependency = json.targets[target][dep];
+            const depParts = dep.split('/'),
+                id = depParts[0],
+                version = depParts[1],
+                dependency = json.targets[target][dep];
 
             if (!packageDictionary[id]) {
                 packageDictionary[id] = {
-                    id : id,
+                    id: id,
                     version: version,
-                    targetFramework : target,
-                    label : id + " " + (settings.hideVersion ? "" : version.green),
-                    nodes:[]
+                    targetFramework: target,
+                    label: id + " " + (settings.hideVersion ? "" : version.green),
+                    nodes: []
                 }
             }
         });
@@ -50,7 +50,7 @@ module.exports.list = function(dir, settings){
 
             var pkg = packageDictionary[id];
             Object.keys(dependency.dependencies || []).forEach(dependantId => {
-                if (packageDictionary[dependantId] && pkg.nodes.filter(x => x.id === dependantId).length === 0){
+                if (packageDictionary[dependantId] && pkg.nodes.filter(x => x.id === dependantId).length === 0) {
                     var resolvedDep = packageDictionary[dependantId];
                     pkg.nodes.push(resolvedDep);
                     resolvedDep.used = true;

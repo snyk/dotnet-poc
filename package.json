@@ -1,25 +1,24 @@
 {
-  "name": "nuget-tree",
-  "version": "1.0.9",
-  "description": "",
+  "name": "snyk-dotnet-poc",
+  "version": "1.0.0",
+  "description": "![logo](https://res.cloudinary.com/snyk/image/upload/v1468845259/logo/snyk-dog.svg) ## Snyk: .Net POC ***",
   "main": "app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "MIT",
   "dependencies": {
-    "archy": "^1.0.0",
-    "colors": "^1.1.2",
     "xml2js": "^0.4.17",
     "zip": "^1.2.0"
   },
-  "preferGlobal": true,
-  "bin": {
-    "nuget-tree": "./app.js"
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/richorama/nuget-tree.git"
-  }
+    "url": "git+https://github.com/snyk/dotnet-poc.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/snyk/dotnet-poc/issues"
+  },
+  "homepage": "https://github.com/snyk/dotnet-poc#readme"
 }

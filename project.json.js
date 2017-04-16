@@ -8,23 +8,23 @@
   ...
 
 */
-var fs = require('fs');
-var safeBufferRead = require('./safeBufferRead');
-var path = require('path');
+const fs = require('fs'),
+    safeBufferRead = require('./safeBufferRead'),
+    path = require('path');
 
-module.exports.list = function(dir){
+module.exports.list = function (dir) {
 
-    if (!fs.existsSync(path.join(dir,'project.json'))){
+    if (!fs.existsSync(path.join(dir, 'project.json'))) {
         return [];
     }
 
-    var jsonString = safeBufferRead(fs.readFileSync(path.join(dir,'project.json'))).replace("´╗┐","");
-    var json = JSON.parse(jsonString);
+    const jsonString = safeBufferRead(fs.readFileSync(path.join(dir, 'project.json'))).replace("´╗┐", ""),
+        json = JSON.parse(jsonString);
 
-    var deps = json.dependencies || {};
+    const deps = json.dependencies || {};
     return Object.keys(deps).map(id => {
         return {
-            id : id,
+            id: id,
             version: deps[id]
         }
     });
