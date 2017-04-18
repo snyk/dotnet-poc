@@ -11,7 +11,8 @@
 const packagesConfig = require('./packages.config.js'),
     projectLockJson = require('./project.lock.json.js'),
     nuspec = require('./package.nupkg.js'),
-    packages = require('./packages.js'),    
+    packages = require('./packages.js'),
+    fs = require('fs'),
     dir = process.argv.slice(2)[0];
 
 function hasFlag(name) {
@@ -93,6 +94,13 @@ function displayPackages(packages, source) {
         }
         return cloned
     }
-    console.log(JSON.stringify(transofrmRecursive(head, [])));
+    const result = JSON.stringify(transofrmRecursive(head, []));
+    console.log(result);
+    fs.writeFile("result.json", result, function (err) {
+        if (err) {
+            return console.log(err);
+        }
+    });
+    
 }
 
